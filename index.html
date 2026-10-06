@@ -1,0 +1,806 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Тренажёр NumPy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+/* Layout: спокойный «учебник» — карточки заданий, крупный читаемый код, мягкий индиго-акцент */
+:root{
+  --bg:#f4f6fb; --panel:#ffffff; --panel2:#eef1f8; --fg:#1d2433; --muted:#667085;
+  --line:#e2e7f0; --accent:#4f46e5; --accent-soft:#e7e6ff;
+  --ok:#15926b; --ok-bg:#dcf5ea; --bad:#d64550; --bad-bg:#ffe0e2; --ghost:#aab3c5;
+  --code-bg:#f7f8fc; --kw:#b5179e; --num:#1d4ed8; --str:#0a8f5b; --np:#9333ea; --com:#8a93a6;
+  --font:'Nunito',system-ui,-apple-system,Segoe UI,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#11141c; --panel:#191e29; --panel2:#1f2532; --fg:#e8ecf5; --muted:#9aa5bb;
+  --line:#2a3242; --accent:#8b83ff; --accent-soft:#2a2850;
+  --ok:#3ddc97; --ok-bg:#133a2c; --bad:#ff8088; --bad-bg:#3e1d22; --ghost:#5a6478;
+  --code-bg:#0f131b; --kw:#ff7ad9; --num:#7aa7ff; --str:#53d9a0; --np:#c79bff; --com:#6b7488;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#11141c; --panel:#191e29; --panel2:#1f2532; --fg:#e8ecf5; --muted:#9aa5bb;
+  --line:#2a3242; --accent:#8b83ff; --accent-soft:#2a2850;
+  --ok:#3ddc97; --ok-bg:#133a2c; --bad:#ff8088; --bad-bg:#3e1d22; --ghost:#5a6478;
+  --code-bg:#0f131b; --kw:#ff7ad9; --num:#7aa7ff; --str:#53d9a0; --np:#c79bff; --com:#6b7488;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);line-height:1.5;margin:0}
+.wrap{max-width:860px;margin:0 auto;padding-inline:16px;padding-block:18px 64px}
+h1,h2,h3{text-wrap:balance;margin:0}
+button{font-family:inherit;cursor:pointer}
+code,kbd{font-family:var(--mono)}
+
+/* --- Шапка --- */
+header.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.logo{font-weight:800;font-size:20px;letter-spacing:.2px;display:flex;align-items:center;gap:9px}
+.logo .dot{width:28px;height:28px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:15px}
+.top .spacer{flex:1}
+.pill-btn{background:var(--panel);border:1px solid var(--line);color:var(--fg);border-radius:999px;padding:7px 13px;font-weight:700;font-size:13px}
+.pill-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* --- Главная --- */
+.hero{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px 20px 18px;margin-bottom:16px}
+.hero p{color:var(--muted);margin:8px 0 0;font-size:15px}
+.progress-row{display:flex;align-items:center;gap:12px;margin-top:16px;flex-wrap:wrap}
+.bar{flex:1;min-width:160px;height:10px;background:var(--panel2);border-radius:999px;overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--accent);width:0;transition:width .4s}
+.bar-label{font-weight:700;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 13px;text-align:left;display:flex;flex-direction:column;gap:6px;min-height:104px;transition:transform .08s,border-color .15s}
+.card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.card .num{font-weight:800;font-size:13px;color:var(--accent);display:flex;justify-content:space-between;align-items:center}
+.card .t{font-size:13px;color:var(--fg);font-weight:600;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}
+.badge{font-size:10px;font-weight:800;padding:2px 7px;border-radius:999px;text-transform:uppercase;letter-spacing:.3px}
+.badge.new{background:var(--panel2);color:var(--muted)}
+.badge.learning{background:var(--accent-soft);color:var(--accent)}
+.badge.done{background:var(--ok-bg);color:var(--ok)}
+
+/* --- Экран задания --- */
+.task-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px}
+.back{background:var(--panel);border:1px solid var(--line);color:var(--fg);border-radius:10px;width:40px;height:40px;font-size:18px;flex:none}
+.back:hover{border-color:var(--accent);color:var(--accent)}
+.task-title{flex:1;min-width:0}
+.task-title .k{font-size:13px;font-weight:800;color:var(--accent)}
+.task-title h2{font-size:17px;margin-top:2px;font-weight:700}
+.note{background:var(--accent-soft);color:var(--accent);border-radius:10px;padding:9px 12px;font-size:13px;font-weight:600;margin-bottom:12px;display:flex;gap:8px}
+.note b{font-weight:800}
+
+.tabs{display:flex;gap:6px;background:var(--panel2);padding:5px;border-radius:12px;margin-bottom:14px}
+.tabs button{flex:1;border:0;background:transparent;color:var(--muted);font-weight:700;font-size:13.5px;padding:9px 6px;border-radius:9px}
+.tabs button.active{background:var(--panel);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}
+.sec-label{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px}
+
+/* блок кода */
+pre.code{background:var(--code-bg);border:1px solid var(--line);border-radius:12px;padding:14px;overflow-x:auto;font-family:var(--mono);font-size:14px;line-height:1.7;margin:0;white-space:pre;tab-size:2}
+.tok-kw{color:var(--kw);font-weight:700}
+.tok-num{color:var(--num)}
+.tok-str{color:var(--str)}
+.tok-np{color:var(--np);font-weight:600}
+.tok-com{color:var(--com);font-style:italic}
+
+.copyline{display:flex;justify-content:flex-end;margin-top:8px}
+
+/* Разбор по строкам */
+.exp-list{display:flex;flex-direction:column;gap:12px;margin-top:4px}
+.exp-item{display:flex;gap:11px}
+.exp-item .ln{flex:none;width:24px;height:24px;border-radius:7px;background:var(--accent-soft);color:var(--accent);font-weight:800;font-size:12px;display:grid;place-items:center;margin-top:2px}
+.exp-item .body code{display:block;background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:13px;overflow-x:auto;white-space:pre}
+.exp-item .body p{margin:6px 0 0;font-size:14px;color:var(--fg)}
+.out{margin-top:14px}
+.out pre{background:var(--code-bg);border:1px dashed var(--line);border-radius:12px;padding:12px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;color:var(--muted);white-space:pre;margin:0;line-height:1.5}
+
+/* --- Тренажёр --- */
+.trainer .task-remind{font-size:14px;color:var(--muted);margin:0 0 12px;padding-left:12px;border-left:3px solid var(--accent)}
+.done-lines{display:flex;flex-direction:column;gap:3px;margin-bottom:8px}
+.done-lines .dl{font-family:var(--mono);font-size:13.5px;padding:3px 10px;border-radius:7px;background:var(--ok-bg);color:var(--fg);white-space:pre;overflow-x:auto;display:flex;gap:8px;align-items:center}
+.done-lines .dl::before{content:"✓";color:var(--ok);font-weight:800;flex:none}
+.done-lines .dl span{white-space:pre}
+
+.typebox{margin-top:6px}
+.typehint{font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:700;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.indent-chip{background:var(--accent-soft);color:var(--accent);border-radius:6px;padding:1px 7px;font-weight:800}
+.typeline{position:relative;font-family:var(--mono);font-size:15px;line-height:1.7;border:2px solid var(--line);border-radius:10px;background:var(--code-bg);overflow:hidden}
+.typeline.active{border-color:var(--accent)}
+.typeline.solved{border-color:var(--ok)}
+.typeline .overlay,.typeline textarea{margin:0;padding:11px 13px;font-family:var(--mono);font-size:15px;line-height:1.7;white-space:pre-wrap;word-break:break-word;letter-spacing:0}
+.typeline .overlay{position:absolute;inset:0;pointer-events:none;color:var(--ghost)}
+.typeline textarea{position:relative;width:100%;border:0;outline:0;resize:none;background:transparent;color:transparent;caret-color:var(--accent);overflow:hidden;display:block}
+.ch{white-space:pre}
+.ch.ok{color:var(--fg)}
+.ch.ok.sp{background:transparent}
+.ch.bad{color:#fff;background:var(--bad);border-radius:3px}
+.ch.extra{color:#fff;background:var(--bad);border-radius:3px}
+.ch.todo{color:var(--ghost)}
+.ghostline{font-family:var(--mono);font-size:14px;color:var(--ghost);background:var(--panel2);border-radius:8px;padding:7px 11px;margin-bottom:7px;white-space:pre;overflow-x:auto}
+.train-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:9px;padding:8px 12px;font-weight:700;font-size:13px}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{color:#fff;filter:brightness(1.07)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.train-expl{margin-top:12px;background:var(--panel2);border-radius:10px;padding:11px 13px;font-size:14px}
+.train-expl .sec-label{margin-bottom:4px}
+.stats{display:flex;gap:16px;margin-top:12px;flex-wrap:wrap;font-size:13px;color:var(--muted);font-weight:700}
+.stats b{color:var(--fg);font-variant-numeric:tabular-nums}
+
+.congrats{text-align:center;padding:26px 14px}
+.congrats .big{font-size:42px}
+.congrats h3{font-size:20px;margin:8px 0 4px}
+.congrats p{color:var(--muted);margin:0 0 16px}
+
+/* Экзамен */
+.exam textarea{width:100%;min-height:230px;font-family:var(--mono);font-size:14px;line-height:1.7;border:2px solid var(--line);border-radius:12px;background:var(--code-bg);color:var(--fg);padding:13px;resize:vertical;tab-size:2}
+.exam textarea:focus{outline:0;border-color:var(--accent)}
+.exam-result{margin-top:14px;display:none}
+.exam-result .score{font-size:16px;font-weight:800;margin-bottom:10px}
+.diff{font-family:var(--mono);font-size:13px;display:flex;flex-direction:column;gap:3px}
+.diff .row{padding:5px 10px;border-radius:7px;white-space:pre-wrap;word-break:break-word}
+.diff .row.ok{background:var(--ok-bg)}
+.diff .row.bad{background:var(--bad-bg)}
+.diff .row .lab{font-weight:800;font-size:11px;opacity:.7;margin-right:6px}
+.diff .exp{color:var(--muted);font-size:12px;padding-left:28px}
+
+.nav-tasks{display:flex;justify-content:space-between;gap:10px;margin-top:18px}
+
+/* Модалка */
+.modal-back{position:fixed;inset:0;background:rgba(10,14,22,.55);display:none;z-index:50;padding:16px;overflow-y:auto}
+.modal-back.show{display:block}
+.modal{max-width:720px;margin:24px auto;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px}
+.modal h2{font-size:20px;margin-bottom:6px}
+.modal .close{float:right;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:9px;width:34px;height:34px;font-size:17px}
+.concept{border-top:1px solid var(--line);padding:13px 0}
+.concept:first-of-type{border-top:0}
+.concept h4{font-size:15px;margin:0 0 3px}
+.concept h4 code{background:var(--accent-soft);color:var(--accent);padding:1px 7px;border-radius:6px;font-size:13px}
+.concept p{margin:0;font-size:14px;color:var(--fg)}
+.concept p code{background:var(--code-bg);padding:1px 5px;border-radius:5px;font-size:13px;border:1px solid var(--line)}
+.hidden{display:none!important}
+footer{color:var(--muted);font-size:12px;text-align:center;margin-top:34px}
+@media (max-width:420px){.tabs button{font-size:12.5px;padding:9px 3px}.grid{grid-template-columns:repeat(auto-fill,minmax(135px,1fr))}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="logo"><span class="dot">np</span> Тренажёр NumPy</div>
+    <div class="spacer"></div>
+    <button class="pill-btn" id="btnBasics">📘 Основы</button>
+    <button class="pill-btn" id="btnGloss">🔑 Функции</button>
+    <button class="pill-btn" id="btnTheme">🌓</button>
+  </header>
+
+  <!-- ГЛАВНАЯ -->
+  <section id="home">
+    <div class="hero">
+      <h1>Выучи 24 задания наизусть</h1>
+      <p>Это тренажёр по коду из твоего блокнота. Цель — не просто понять, а запомнить код так, чтобы писать его быстро и без подсказок. Начни с режима <b>«Учить»</b>, потом тренируйся <b>печатать по памяти</b>.</p>
+      <div class="progress-row">
+        <div class="bar"><i id="barFill"></i></div>
+        <div class="bar-label" id="barLabel">0 / 24 выучено</div>
+        <button class="pill-btn" id="btnReset">Сбросить прогресс</button>
+      </div>
+    </div>
+    <div class="grid" id="grid"></div>
+    <footer>Счёт элементов в массивах — с нуля. Все объяснения — простыми словами. Твой прогресс сохраняется в этом браузере.</footer>
+  </section>
+
+  <!-- ЗАДАНИЕ -->
+  <section id="task" class="hidden"></section>
+</div>
+
+<!-- Модалка «Основы» -->
+<div class="modal-back" id="mBasics">
+  <div class="modal">
+    <button class="close" data-close>✕</button>
+    <h2>Основы за 3 минуты</h2>
+    <p style="color:var(--muted);margin:4px 0 8px">Если ты совсем не программировал — прочитай это один раз. Дальше всё станет понятнее.</p>
+    <div id="basicsBody"></div>
+  </div>
+</div>
+<!-- Модалка «Функции» -->
+<div class="modal-back" id="mGloss">
+  <div class="modal">
+    <button class="close" data-close>✕</button>
+    <h2>Словарь функций NumPy</h2>
+    <p style="color:var(--muted);margin:4px 0 8px">Все инструменты, которые встречаются в заданиях — коротко и по-простому.</p>
+    <div id="glossBody"></div>
+  </div>
+</div>
+
+<script>
+/* ===================== ДАННЫЕ ===================== */
+/* В коде \n (обратный слэш + n) — это как Python печатает перенос строки. */
+const RAW = {
+0:`import numpy as np`,
+1:`matrix1 = np.arange(1, 21).reshape(4, 5)
+print(f'Массив:\\n {matrix1} \\nФорма: {matrix1.shape}')`,
+2:`matrix2 = np.ones((6, 6))
+matrix2[1: -1, 1: -1] = 0
+print(matrix2)`,
+3:`matrix3 = np.arange(10)
+matrix3_float = matrix3.astype(np.float32)
+matrix3_bool = matrix3 > 5
+print(f'Массив: {matrix3} \\nFloat32: {matrix3_float} \\nБулев массив: {matrix3_bool}')`,
+4:`print(np.eye(4) * 5)`,
+5:`matrix5 = np.linspace(-10, 10, 15)
+print(f'Пятый элемент: {matrix5[4]} \\nДесятый элемент: {matrix5[9]}')`,
+6:`matrix6 = np.arange(1, 26).reshape(5, 5)
+print(matrix6[2: 5, 1: 4])`,
+7:`matrix7 = np.random.rand(6, 6)
+print(matrix7[1::2, 0::2])`,
+8:`matrix8 = np.random.randint(1, 51, size = 20)
+mask = (matrix8 >= 3) & (matrix8 <= 10)
+matrix8[mask] = -1
+count8 = np.sum(mask)
+print(count8)`,
+9:`matrix9 = np.random.randint(2, 101, size = 15)
+sorted_indx = np.argsort(matrix9)
+min3 = sorted_indx[:3]
+max3 = sorted_indx[-3:]
+print("Массив:", matrix9)
+print("Индексы 3-х минимальных:", min3)
+print("Индексы 3-х максимальных:", max3)`,
+10:`matrix10 = np.random.rand(4, 5)
+print("Оригинал:\\n", matrix10)
+matrix10[:, [1, 3]] = matrix10[:, [3, 1]]
+print("После перестановки:\\n", matrix10)`,
+11:`matrix11_1 = np.random.rand(3, 4)
+matrix11_2 = np.random.randn(3, 4)
+condition = matrix11_1 > matrix11_2
+print(f'Булев массив: {condition} \\nКоличество True: {np.sum(condition)}')`,
+12:`matrix12 = np.random.randn(10)
+print((matrix12 - np.mean(matrix12)) / np.std(matrix12))`,
+13:`matrix13 = np.random.rand(4, 6)
+print(f'Среднее по строке: {np.sum(matrix13, axis = 1)} \\nСреднее по столбцам: {np.sum(matrix13, axis = 0)} \\nСтандартное отклонение: {np.std(matrix13)}')`,
+14:`vector14_1 = np.random.rand(8)
+vector14_2 = np.random.randn(8)
+print(f'Через np.dot: {np.dot(vector14_1, vector14_2)}')
+print(f'Через сумму поэлементных произведений: {np.sum(vector14_1 * vector14_2)}')`,
+15:`dispers = np.sqrt(10)
+matrix15A = np.random.normal(loc = 5, scale = dispers, size = (3, 4))
+matrix15B = np.random.normal(loc = 5, scale = dispers, size = (4, 2))
+matrix15C = matrix15A @ matrix15B
+print("Форма результата:", matrix15C.shape)`,
+16:`matrix16_1 = np.random.rand(5, 5)
+matrix16_2 = np.random.rand(5, 5)
+print(f'Сложение поэлементно: \\n{matrix16_1 + matrix16_2} \\nВозведение в степень поэлементно: \\n{matrix16_1 ** matrix16_2}')`,
+17:`matrix17 = np.random.randint(1, 101, size = 12)
+print(f'Последнее значение кумулятивной суммы: {np.cumsum(matrix17)[-1]} \\nПоследнее значение кумулятивного произведения: {np.cumprod(matrix17)[-1]}')`,
+18:`matrix18 = np.random.rand(4, 4)
+det18 = np.linalg.det(matrix18)
+print('Определитель =', det18)
+if det18 != 0:
+  matrix18_inv = np.linalg.inv(matrix18)
+  if np.allclose((matrix18 @ matrix18_inv), np.eye(4)) == True:
+    print('A * A^-1 близко к единичной матрице')
+  else:
+    print('что-то не так')`,
+19:`matrix19 = np.array([[2, 1, -1], [-3, -1, 2], [-2, 1, 2]])
+matrix19_answrs = [8, -11, -3]
+print(np.linalg.solve(matrix19, matrix19_answrs))`,
+20:`matrix20 = np.random.rand(4, 4)
+matrix20[0, 0] = np.nan
+matrix20[1, 2] = np.nan
+matrix20[3, 1] = np.nan
+before = np.sum(np.isnan(matrix20))
+mean20 = np.nanmean(matrix20)
+matrix20[np.isnan(matrix20)] = mean20
+after = np.sum(np.isnan(matrix20))
+print(f'NaN до: {before} \\nNaN после: {after}')`,
+21:`matrix21 = np.random.randint(1, 100, size = 50)
+print(np.where((matrix21 >= 25) & (matrix21 <= 50), 1, matrix21))`,
+22:`points22 = np.random.rand(20, 2)
+print(np.sqrt(np.sum(points22 ** 2, axis = 1)))`,
+23:`students23 = np.random.randint(2, 6, size = (10, 5))
+weights23 = np.random.rand(5)
+weights23 /= np.sum(weights23)
+print(np.dot(students23, weights23))`,
+24:`matrix24 = np.random.randint(10, 101, size = (8, 3)).astype(float)
+mean24 = np.mean(matrix24, axis = 0)
+std24 = np.std(matrix24, axis = 0)
+print(f'1. Среднее значение: {mean24} \\n2. Стандартное отклонение: {std24} \\n3. По формуле: \\n{(matrix24 - mean24) / std24}')`
+};
+
+const TITLES = {
+0:"Подготовка: подключаем NumPy",
+1:"Массив (4×5) из чисел 1–20 и его форма",
+2:"Рамка из единиц, внутри нули (6×6)",
+3:"Числа 0–9: целые → float32 → True/False",
+4:"Диагональ из пятёрок (4×4)",
+5:"15 чисел от −10 до 10, 5-й и 10-й",
+6:"Вырезать кусок таблицы 5×5",
+7:"Нечётные строки и чётные столбцы",
+8:"Заменить числа 3–10 на −1, посчитать",
+9:"Индексы 3 максимумов и 3 минимумов",
+10:"Поменять местами столбцы 1 и 3",
+11:"Где первый массив больше второго",
+12:"Нормализовать массив (−среднее /откл.)",
+13:"Статистика по строкам и столбцам",
+14:"Скалярное произведение двумя способами",
+15:"Матричное умножение A@B и форма",
+16:"Сложение и степень поэлементно (5×5)",
+17:"Кумулятивная сумма и произведение",
+18:"Определитель и обратная матрица",
+19:"Решить систему уравнений",
+20:"Заменить NaN на среднее",
+21:"np.where: заменить 25–50 на 1",
+22:"Евклидово расстояние до (0,0)",
+23:"Взвешенный средний балл (np.dot)",
+24:"Стандартизация столбцов (z-оценка)"
+};
+
+const NOTES = {
+15:"В оригинале переменная названа русской буквой «С». Здесь — латинская <b>C</b>, чтобы не путаться. Код работает одинаково.",
+18:"Отступы обязательны! <b>2 пробела</b> — внутри первого <code>if</code>, <b>4 пробела</b> — внутри второго. В тренажёре их тоже нужно набрать.",
+20:"В блокноте эта ячейка была пустой — это стандартное решение задания.",
+13:"Хитрость: в задании просят среднее по строкам, но в коде стоит <code>np.sum</code>. Запоминаем так, как в блокноте."
+};
+
+const EXP = {
+0:["Подключаем библиотеку NumPy — набор готовых инструментов для чисел и таблиц (массивов). <code>as np</code> — короткое имя, чтобы дальше писать <code>np</code>, а не <code>numpy</code>. Пишут один раз в начале."],
+1:[
+"<code>np.arange(1, 21)</code> делает ряд чисел от 1 до 20 (21 не входит). <code>.reshape(4, 5)</code> складывает эти 20 чисел в таблицу: 4 строки, 5 столбцов. Знак <code>=</code> — «сохранить в переменную <code>matrix1</code>».",
+"<code>print(...)</code> печатает на экран. <code>f'...'</code> — «умная строка»: что в фигурных скобках <code>{}</code>, заменится значением. <code>\\n</code> — перенос строки. <code>.shape</code> — форма (сколько строк и столбцов)."
+],
+2:[
+"<code>np.ones((6, 6))</code> — таблица 6×6 вся из единиц. Скобки двойные, потому что размер передаём одной парой <code>(6, 6)</code>.",
+"Берём середину и ставим нули. <code>1:-1</code> — «со второго до предпоследнего» (−1 это последний). Первая часть — строки, вторая — столбцы. Остаётся рамка из единиц.",
+"Печатаем таблицу."
+],
+3:[
+"<code>np.arange(10)</code> — числа от 0 до 9 (всего 10, счёт с нуля).",
+"<code>.astype(np.float32)</code> превращает целые в дробные: <code>0 → 0.0</code>.",
+"Сравниваем каждое число с 5. Получаем массив из True/False: True там, где больше 5.",
+"Печатаем все три версии, <code>\\n</code> переносит строки."
+],
+4:["<code>np.eye(4)</code> — единичная матрица 4×4 (единицы по диагонали, остальное нули). Умножаем на 5 — диагональ становится из пятёрок. И сразу печатаем."],
+5:[
+"<code>np.linspace(-10, 10, 15)</code> — 15 чисел, равномерно расставленных от −10 до 10 (оба конца входят).",
+"<code>matrix5[4]</code> — пятый элемент (счёт с нуля: [0] — первый). <code>matrix5[9]</code> — десятый."
+],
+6:[
+"Числа 1..25 укладываем в таблицу 5×5.",
+"Вырезаем кусок: строки 2–4 (<code>2:5</code> — до 5 не включая) и столбцы 1–3 (<code>1:4</code>). Счёт с нуля."
+],
+7:[
+"<code>np.random.rand(6, 6)</code> — таблица 6×6 случайных дробных чисел от 0 до 1.",
+"<code>1::2</code> — каждый второй, начиная с индекса 1 (строки 1,3,5). <code>0::2</code> — каждый второй с индекса 0 (столбцы 0,2,4). Число после второго двоеточия — это шаг."
+],
+8:[
+"<code>np.random.randint(1, 51, size = 20)</code> — 20 случайных целых от 1 до 50 (51 не входит).",
+"Маска — массив True/False. True там, где число от 3 до 10. <code>&</code> — «и одновременно». Каждое условие в своих скобках — обязательно!",
+"Где в маске True — записываем −1.",
+"<code>np.sum(mask)</code> считает True (True=1) — сколько заменили.",
+"Печатаем количество."
+],
+9:[
+"15 случайных целых от 2 до 100.",
+"<code>np.argsort</code> даёт не сами числа, а их индексы (позиции) по возрастанию.",
+"Первые 3 индекса — позиции трёх самых маленьких чисел.",
+"Последние 3 индекса — позиции трёх самых больших.",
+"Печатаем массив.",
+"Печатаем индексы минимумов. В <code>print</code> через запятую — выводится в строку через пробел.",
+"Печатаем индексы максимумов."
+],
+10:[
+"Таблица 4×5 случайных чисел 0..1.",
+"Печатаем оригинал. <code>\\n</code> — перенос строки.",
+"Меняем столбцы местами. <code>:</code> — «все строки». Слева выбираем столбцы [1,3], справа кладём их наоборот [3,1].",
+"Печатаем результат."
+],
+11:[
+"Первая таблица 3×4: случайные числа от 0 до 1.",
+"Вторая: <code>np.random.randn</code> — случайные числа вокруг нуля (бывают отрицательные).",
+"Сравниваем поэлементно: True там, где первое больше второго.",
+"Печатаем маску и <code>np.sum</code> — сколько раз True."
+],
+12:[
+"10 случайных чисел вокруг нуля.",
+"Нормализуем: из каждого числа вычитаем среднее <code>np.mean</code> и делим на стандартное отклонение <code>np.std</code>."
+],
+13:[
+"Таблица 4×6 случайных чисел.",
+"<code>axis = 1</code> — считать по строкам, <code>axis = 0</code> — по столбцам. <code>np.std</code> — стандартное отклонение всех чисел. (Для среднего вместо <code>np.sum</code> берут <code>np.mean</code>.)"
+],
+14:[
+"Первый вектор: 8 чисел 0..1.",
+"Второй вектор: 8 чисел вокруг нуля.",
+"<code>np.dot(a, b)</code> — скалярное произведение: перемножить попарно и сложить.",
+"То же вручную: <code>a * b</code> перемножает попарно, <code>np.sum</code> складывает. Результат совпадает."
+],
+15:[
+"Отклонение = корень из дисперсии. <code>np.sqrt(10)</code> — корень из 10. (<code>scale</code> — это отклонение, не дисперсия.)",
+"<code>np.random.normal(loc=5, scale=dispers, size=(3,4))</code> — таблица 3×4 из нормального распределения: среднее 5 (<code>loc</code>), отклонение dispers (<code>scale</code>).",
+"То же самое, но размер 4×2.",
+"<code>@</code> — матричное умножение. (3×4)·(4×2) = (3×2). Внутренние числа (4 и 4) должны совпадать.",
+"Печатаем форму результата — ждём (3, 2)."
+],
+16:[
+"Первая таблица 5×5 случайных чисел.",
+"Вторая таблица 5×5 случайных чисел.",
+"<code>+</code> складывает поэлементно. <code>**</code> — степень поэлементно (каждое число первой в степень соответствующего из второй)."
+],
+17:[
+"12 случайных целых от 1 до 100.",
+"<code>np.cumsum</code> — нарастающая сумма, <code>np.cumprod</code> — нарастающее произведение. <code>[-1]</code> берёт последний элемент — итог."
+],
+18:[
+"Случайная матрица 4×4.",
+"<code>np.linalg.det</code> — определитель (одно число).",
+"Печатаем определитель.",
+"<code>if</code> — «если», <code>!=</code> — «не равно». Если определитель не ноль — есть обратная матрица.",
+"<code>np.linalg.inv</code> — обратная матрица. Отступ 2 пробела = строка внутри <code>if</code>.",
+"<code>A @ A⁻¹</code> должно дать единичную матрицу <code>np.eye(4)</code>. <code>np.allclose</code> проверяет «почти равно» (из-за округлений).",
+"Если да — печатаем сообщение. Отступ 4 пробела — внутри второго <code>if</code>.",
+"<code>else</code> — «иначе».",
+"Иначе печатаем, что что-то не так."
+],
+19:[
+"<code>np.array([...])</code> — массив из готовых чисел. Внутри список строк матрицы (коэффициенты при x, y, z).",
+"Правые части уравнений (то, что после знака =).",
+"<code>np.linalg.solve</code> решает систему и возвращает [x, y, z]."
+],
+20:[
+"Случайная матрица 4×4.",
+"Ставим <code>np.nan</code> («не число», пропуск) в клетку [0, 0]. Запись [строка, столбец], счёт с нуля.",
+"Ещё один пропуск в клетку [1, 2].",
+"Ещё один пропуск в клетку [3, 1].",
+"<code>np.isnan</code> даёт True там, где NaN. <code>np.sum</code> считает — сколько NaN сейчас.",
+"<code>np.nanmean</code> — среднее, пропуская NaN.",
+"Во все клетки с NaN записываем это среднее.",
+"Снова считаем NaN — теперь должно быть 0.",
+"Печатаем количество до и после."
+],
+21:[
+"50 случайных целых от 1 до 99.",
+"<code>np.where(условие, A, B)</code>: где условие True — ставим A (здесь 1), иначе B (оставляем число). Заменяем числа 25–50 на 1."
+],
+22:[
+"20 точек, у каждой 2 координаты (x, y) — таблица 20×2.",
+"Расстояние = √(x²+y²). <code>** 2</code> — в квадрат, <code>np.sum(..., axis=1)</code> — сложить x²+y² в каждой строке, <code>np.sqrt</code> — корень."
+],
+23:[
+"Оценки: 10 студентов × 5 предметов, числа от 2 до 5.",
+"5 случайных весов предметов.",
+"Делим каждый вес на их сумму, чтобы сумма весов стала 1. <code>/=</code> — «поделить и сохранить обратно».",
+"<code>np.dot</code> умножает оценки на веса и складывает — средневзвешенный балл каждого студента."
+],
+24:[
+"Таблица 8×3 из целых 10..100, сразу переводим в дробные (<code>.astype(float)</code>).",
+"Среднее по каждому столбцу (<code>axis = 0</code> — вниз по строкам).",
+"Стандартное отклонение каждого столбца.",
+"Стандартизация: <code>(x − среднее) / отклонение</code>. NumPy сам применит к каждому столбцу."
+]
+};
+
+const OUT = {
+1:`Массив:\n [[ 1  2  3  4  5]\n [ 6  7  8  9 10]\n [11 12 13 14 15]\n [16 17 18 19 20]] \nФорма: (4, 5)`,
+2:`[[1. 1. 1. 1. 1. 1.]\n [1. 0. 0. 0. 0. 1.]\n [1. 0. 0. 0. 0. 1.]\n [1. 0. 0. 0. 0. 1.]\n [1. 0. 0. 0. 0. 1.]\n [1. 1. 1. 1. 1. 1.]]`,
+3:`Массив: [0 1 2 3 4 5 6 7 8 9] \nFloat32: [0. 1. 2. 3. 4. 5. 6. 7. 8. 9.] \nБулев массив: [False False False False False False  True  True  True  True]`,
+4:`[[5. 0. 0. 0.]\n [0. 5. 0. 0.]\n [0. 0. 5. 0.]\n [0. 0. 0. 5.]]`,
+5:`Пятый элемент: -4.285714285714286 \nДесятый элемент: 2.8571428571428577`,
+6:`[[12 13 14]\n [17 18 19]\n [22 23 24]]`,
+8:`6   (пример: сколько чисел попало в диапазон 3–10)`,
+9:`Массив: [91 26 16 74 11 34 32 18 54 41 72 51 92 37 63]\nИндексы 3-х минимальных: [4 2 7]\nИндексы 3-х максимальных: [ 3  0 12]`,
+15:`Форма результата: (3, 2)`,
+17:`Последнее значение кумулятивной суммы: 566 \nПоследнее значение кумулятивного произведения: 8541411175503360000`,
+18:`Определитель = -0.18305308579240903\nA * A^-1 близко к единичной матрице`,
+19:`[ 2.  3. -1.]`,
+20:`NaN до: 3 \nNaN после: 0`
+};
+
+const BASICS = [
+["Переменная","Коробка с именем, куда кладут значение. <code>x = 5</code> значит «положи 5 в коробку x». Знак <code>=</code> — это не «равно», а «сохрани»."],
+["<code>np</code> и функции","<code>np</code> — это NumPy, библиотека инструментов. <code>np.что-то(...)</code> — вызвать инструмент. То, что в скобках — это «что ему дать» (аргументы)."],
+["Массив","Это как список чисел или таблица. Одномерный — просто строчка чисел. Двумерный — таблица из строк и столбцов (как в Excel)."],
+["Счёт с нуля","Первый элемент имеет номер 0, второй — 1 и так далее. Поэтому <code>a[4]</code> — это пятый элемент."],
+["Индексы и срезы","<code>a[2:5]</code> — «кусок с 2 по 4» (правая граница не входит!). <code>a[1::2]</code> — «каждый второй, начиная с 1». В таблице: <code>a[строки, столбцы]</code>, <code>:</code> значит «все»."],
+["<code>print</code>","Печатает результат на экран. Без него компьютер посчитает, но ничего не покажет."],
+["f-строка","<code>f'...'</code> — текст, внутри которого в фигурных скобках <code>{x}</code> подставляется значение. <code>\\n</code> внутри — перенос на новую строку."],
+["<code>axis</code>","«Направление» в таблице. <code>axis=0</code> — вниз по столбцам, <code>axis=1</code> — вдоль строк. Запомни: 0 — вертикаль, 1 — горизонталь."],
+["Маска","Массив из True/False. Ставим условие (<code>a > 5</code>), получаем маску, и через неё выбираем или меняем нужные элементы."]
+];
+
+const GLOSS = [
+["np.arange(a, b)","Ряд целых чисел от a до b−1. С одним числом — от 0."],
+["np.array([...])","Сделать массив из готового списка чисел."],
+["np.ones((r, c)) / np.eye(n)","Таблица из единиц / единичная матрица (1 по диагонали)."],
+["np.linspace(a, b, n)","n чисел, равномерно от a до b включительно."],
+[".reshape(r, c)","Переложить те же числа в форму r×c."],
+[".astype(тип)","Сменить тип: <code>float32</code>, <code>float</code> и т.п."],
+[".shape","Форма массива: (строки, столбцы)."],
+["np.random.rand(...)","Случайные дробные от 0 до 1."],
+["np.random.randn(...)","Случайные числа вокруг нуля (нормальные)."],
+["np.random.randint(a, b, size=n)","n случайных целых от a до b−1."],
+["np.random.normal(loc, scale, size)","Нормальные: loc — среднее, scale — отклонение."],
+["np.sum / np.mean / np.std","Сумма / среднее / стандартное отклонение. С <code>axis=</code> — по строкам/столбцам."],
+["np.cumsum / np.cumprod","Нарастающая сумма / произведение."],
+["np.argsort(a)","Индексы (позиции) по возрастанию значений."],
+["np.dot(a, b)  или  a @ b","Скалярное / матричное умножение."],
+["np.sqrt(x)","Квадратный корень."],
+["np.where(усл, A, B)","Где условие True → A, иначе → B."],
+["np.isnan / np.nanmean","Найти NaN (пропуски) / среднее без учёта NaN."],
+["np.nan","«Не число» — пропущенное значение."],
+["np.linalg.det / inv / solve","Определитель / обратная матрица / решение системы."],
+["np.allclose(a, b)","«Почти равны?» — True, если разница крошечная."],
+["&  |","«И» / «ИЛИ» для условий. Каждое условие — в своих скобках."]
+];
+
+/* ===================== СОСТОЯНИЕ ===================== */
+const IDS = Object.keys(RAW).map(Number).sort((a,b)=>a-b);
+let progress = loadProgress();
+function loadProgress(){try{return JSON.parse(localStorage.getItem('np_progress')||'{}')}catch(e){return {}}}
+function saveProgress(){try{localStorage.setItem('np_progress',JSON.stringify(progress))}catch(e){}}
+function setStatus(id,st){const cur=progress[id];if(cur==='done'&&st==='learning')return;progress[id]=st;saveProgress()}
+
+/* ===================== ПОДСВЕТКА КОДА ===================== */
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function highlight(line){
+  // работаем по токенам, чтобы не ломать html
+  let out='',i=0;const s=line;
+  const kw=['import','as','if','else','for','in','print','True','False','and','or','not'];
+  while(i<s.length){
+    const c=s[i];
+    if(c==='#'){out+='<span class="tok-com">'+esc(s.slice(i))+'</span>';break}
+    if(c==="'"||c==='"'){let j=i+1;while(j<s.length&&s[j]!==c)j++;out+='<span class="tok-str">'+esc(s.slice(i,j+1))+'</span>';i=j+1;continue}
+    if(/[0-9]/.test(c)&&!/[A-Za-zА-Яа-я_]/.test(s[i-1]||'')){let j=i;while(j<s.length&&/[0-9.]/.test(s[j]))j++;out+='<span class="tok-num">'+esc(s.slice(i,j))+'</span>';i=j;continue}
+    if(/[A-Za-zА-Яа-я_]/.test(c)){let j=i;while(j<s.length&&/[A-Za-zА-Яа-я0-9_]/.test(s[j]))j++;const w=s.slice(i,j);
+      if(w==='np'){out+='<span class="tok-np">np</span>'}
+      else if(kw.includes(w)){out+='<span class="tok-kw">'+esc(w)+'</span>'}
+      else out+=esc(w);
+      i=j;continue}
+    out+=esc(c);i++;
+  }
+  return out;
+}
+function highlightBlock(code){return code.split('\n').map(highlight).join('\n')}
+
+/* ===================== РЕНДЕР ГЛАВНОЙ ===================== */
+const $=s=>document.querySelector(s);
+function renderHome(){
+  const grid=$('#grid');grid.innerHTML='';
+  IDS.forEach(id=>{
+    const st=progress[id]||'new';
+    const b=document.createElement('button');b.className='card';
+    const badge=st==='done'?'<span class="badge done">готово</span>':st==='learning'?'<span class="badge learning">учу</span>':'<span class="badge new">—</span>';
+    b.innerHTML=`<div class="num">${id===0?'#0':'№'+id} ${badge}</div><div class="t">${TITLES[id]}</div>`;
+    b.onclick=()=>openTask(id);
+    grid.appendChild(b);
+  });
+  const done=IDS.filter(id=>progress[id]==='done').length;
+  $('#barFill').style.width=(done/IDS.length*100)+'%';
+  $('#barLabel').textContent=`${done} / ${IDS.length} выучено`;
+}
+
+/* ===================== ЭКРАН ЗАДАНИЯ ===================== */
+let cur=null, curTab='learn';
+function openTask(id){cur=id;curTab='learn';window.scrollTo(0,0);renderTask()}
+function lines(id){return RAW[id].split('\n')}
+
+function renderTask(){
+  $('#home').classList.add('hidden');
+  const t=$('#task');t.classList.remove('hidden');
+  const note=NOTES[cur]?`<div class="note">⚠️ <div>${NOTES[cur]}</div></div>`:'';
+  t.innerHTML=`
+    <div class="task-head">
+      <button class="back" id="backBtn">←</button>
+      <div class="task-title"><div class="k">${cur===0?'Подготовка':'Задание '+cur} · ${IDS.indexOf(cur)+1} из ${IDS.length}</div><h2>${TITLES[cur]}</h2></div>
+    </div>
+    ${note}
+    <div class="tabs">
+      <button data-tab="learn">📖 Учить</button>
+      <button data-tab="train">⌨️ Тренажёр</button>
+      <button data-tab="exam">🎓 Экзамен</button>
+    </div>
+    <div id="tabBody"></div>
+    <div class="nav-tasks">
+      <button class="btn" id="prevT" ${IDS.indexOf(cur)===0?'disabled':''}>← Пред.</button>
+      <button class="btn" id="nextT" ${IDS.indexOf(cur)===IDS.length-1?'disabled':''}>След. →</button>
+    </div>`;
+  $('#backBtn').onclick=goHome;
+  $('#prevT').onclick=()=>{const i=IDS.indexOf(cur);if(i>0)openTask(IDS[i-1])};
+  $('#nextT').onclick=()=>{const i=IDS.indexOf(cur);if(i<IDS.length-1)openTask(IDS[i+1])};
+  t.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{curTab=b.dataset.tab;drawTabs()});
+  drawTabs();
+}
+function goHome(){cur=null;$('#task').classList.add('hidden');$('#home').classList.remove('hidden');renderHome()}
+
+function drawTabs(){
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===curTab));
+  const body=$('#tabBody');
+  if(curTab==='learn')renderLearn(body);
+  else if(curTab==='train')renderTrain(body);
+  else renderExam(body);
+}
+
+/* ---- Режим УЧИТЬ ---- */
+function renderLearn(body){
+  const ls=lines(cur);
+  const expl=EXP[cur]||[];
+  const out=OUT[cur];
+  body.innerHTML=`
+    <div class="panel">
+      <div class="sec-label">Код целиком</div>
+      <pre class="code">${highlightBlock(RAW[cur])}</pre>
+      <div class="copyline"><button class="btn" id="copyBtn">📋 Скопировать</button></div>
+      <div class="sec-label" style="margin-top:18px">Разбор по строкам</div>
+      <div class="exp-list">
+        ${ls.map((l,i)=>`<div class="exp-item"><div class="ln">${i+1}</div><div class="body"><code>${highlight(l)||'&nbsp;'}</code><p>${expl[i]||''}</p></div></div>`).join('')}
+      </div>
+      ${out?`<div class="out"><div class="sec-label">Пример вывода</div><pre>${esc(out)}</pre></div>`:''}
+    </div>`;
+  $('#copyBtn').onclick=()=>{
+    navigator.clipboard?.writeText(RAW[cur]).then(()=>{
+      const b=$('#copyBtn');if(b){b.textContent='✓ Скопировано';setTimeout(()=>{const b2=$('#copyBtn');if(b2)b2.textContent='📋 Скопировать'},1500);}
+    }).catch(()=>{});
+  };
+}
+
+/* ---- Режим ТРЕНАЖЁР (построчно) ---- */
+let trainState=null;
+function renderTrain(body){
+  const ls=lines(cur);
+  trainState={li:0,showGhost:false,started:null,errors:0,total:0};
+  setStatus(cur,'learning');
+  body.innerHTML=`
+    <div class="panel trainer">
+      <p class="task-remind">${cur===0?'Строка подключения библиотеки':TITLES[cur]}</p>
+      <div class="done-lines" id="doneLines"></div>
+      <div id="activeArea"></div>
+      <div class="stats" id="trainStats"></div>
+    </div>`;
+  drawTrain();
+}
+function drawTrain(){
+  const ls=lines(cur);const st=trainState;
+  const done=$('#doneLines');
+  done.innerHTML=ls.slice(0,st.li).map(l=>`<div class="dl"><span>${esc(l)}</span></div>`).join('');
+  const area=$('#activeArea');
+  if(st.li>=ls.length){renderCongrats(area);setStatus(cur,'done');updateTrainStats();return}
+  const expected=ls[st.li];
+  const indent=(expected.match(/^ */)||[''])[0].length;
+  const indentChip=indent>0?`<span class="indent-chip">отступ: ${indent} ${indent===1?'пробел':indent<5?'пробела':'пробелов'}</span>`:'';
+  area.innerHTML=`
+    <div class="typebox">
+      <div class="typehint">Строка ${st.li+1} из ${ls.length} ${indentChip}<span>печатай по памяти →</span></div>
+      <div class="ghostline ${st.showGhost?'':'hidden'}" id="ghost">${esc(expected)}</div>
+      <div class="typeline active" id="tl">
+        <div class="overlay" id="ov"></div>
+        <textarea id="ta" rows="1" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off"></textarea>
+      </div>
+      <div class="train-actions">
+        <button class="btn" id="gBtn">${st.showGhost?'🙈 Скрыть строку':'👀 Показать строку'}</button>
+        <button class="btn" id="charBtn">↳ Подставить букву</button>
+        <button class="btn" id="skipBtn">⤼ Пропустить строку</button>
+      </div>
+      <div class="train-expl">
+        <div class="sec-label">Что делает эта строка</div>
+        <div>${(EXP[cur]||[])[st.li]||''}</div>
+      </div>
+    </div>`;
+  const ta=$('#ta'),ov=$('#ov'),tl=$('#tl');
+  function paint(){
+    const typed=ta.value;let html='';
+    const n=Math.max(expected.length,typed.length);
+    for(let i=0;i<n;i++){
+      const e=expected[i],tc=typed[i];
+      if(i<typed.length){
+        if(e===undefined){html+=`<span class="ch extra">${esc(tc)}</span>`}
+        else if(tc===e){html+=`<span class="ch ok${e===' '?' sp':''}">${esc(e)}</span>`}
+        else{html+=`<span class="ch bad">${e===' '?' ':esc(e)}</span>`}
+      }else{html+=`<span class="ch todo">${esc(e)}</span>`}
+    }
+    ov.innerHTML=html;
+    autoGrow(ta);
+    if(typed===expected){tl.classList.add('solved');tl.classList.remove('active')}
+    else{tl.classList.remove('solved');tl.classList.add('active')}
+  }
+  ta.addEventListener('input',()=>{
+    if(st.started===null)st.started=Date.now();
+    paint();
+    if(ta.value===expected){setTimeout(nextLine,230)}
+  });
+  ta.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){e.preventDefault();if(ta.value===expected)nextLine();}
+    if(e.key==='Tab'){e.preventDefault();ta.value+='  ';paint();}
+  });
+  $('#gBtn').onclick=()=>{st.showGhost=!st.showGhost;drawTrain()};
+  $('#charBtn').onclick=()=>{
+    const v=ta.value;let k=0;while(k<v.length&&k<expected.length&&v[k]===expected[k])k++;
+    ta.value=expected.slice(0,k+1);st.errors++;paint();ta.focus();
+    if(ta.value===expected)setTimeout(nextLine,230);
+  };
+  $('#skipBtn').onclick=()=>{st.errors++;nextLine()};
+  paint();ta.focus();updateTrainStats();
+}
+function nextLine(){
+  const st=trainState;
+  st.li++;drawTrain();
+  const done=$('#doneLines');if(done)done.scrollIntoView&&0;
+}
+function autoGrow(ta){ta.style.height='auto';ta.style.height=ta.scrollHeight+'px'}
+function updateTrainStats(){
+  const el=$('#trainStats');if(!el)return;const st=trainState;const ls=lines(cur);
+  const t=st.started?Math.round((Date.now()-st.started)/1000):0;
+  el.innerHTML=`<div>Строк: <b>${Math.min(st.li,ls.length)}/${ls.length}</b></div><div>Подсказок: <b>${st.errors}</b></div>`;
+}
+function renderCongrats(area){
+  const perfect=trainState.errors===0;
+  area.innerHTML=`
+    <div class="congrats">
+      <div class="big">${perfect?'🏆':'✅'}</div>
+      <h3>${perfect?'Идеально, без подсказок!':'Задание набрано!'}</h3>
+      <p>${cur===0?'Подключение готово':'Задание '+cur+' отмечено как выученное.'} ${perfect?'':'Повтори ещё раз без подсказок, чтобы закрепить.'}</p>
+      <div class="train-actions" style="justify-content:center">
+        <button class="btn primary" id="againBtn">🔁 Ещё раз</button>
+        ${IDS.indexOf(cur)<IDS.length-1?'<button class="btn" id="goNext">След. задание →</button>':'<button class="btn" id="goHomeBtn">На главную</button>'}
+      </div>
+    </div>`;
+  $('#againBtn').onclick=()=>renderTrain($('#tabBody'));
+  const gn=$('#goNext');if(gn)gn.onclick=()=>openTask(IDS[IDS.indexOf(cur)+1]);
+  const gh=$('#goHomeBtn');if(gh)gh.onclick=goHome;
+}
+
+/* ---- Режим ЭКЗАМЕН ---- */
+function renderExam(body){
+  body.innerHTML=`
+    <div class="panel exam">
+      <div class="sec-label">Напиши весь код по памяти</div>
+      <p style="color:var(--muted);font-size:14px;margin:0 0 10px">Задание: ${TITLES[cur]}. Отступы (пробелы в начале строки) тоже важны. Клавиша Tab добавляет 2 пробела.</p>
+      <textarea id="examTa" spellcheck="false" autocapitalize="off" placeholder="Пиши здесь..."></textarea>
+      <div class="train-actions"><button class="btn primary" id="checkExam">Проверить</button><button class="btn" id="clearExam">Очистить</button></div>
+      <div class="exam-result" id="examRes"></div>
+    </div>`;
+  const ta=$('#examTa');
+  ta.addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();const s=ta.selectionStart;ta.value=ta.value.slice(0,s)+'  '+ta.value.slice(ta.selectionEnd);ta.selectionStart=ta.selectionEnd=s+2}});
+  $('#clearExam').onclick=()=>{ta.value='';$('#examRes').style.display='none'};
+  $('#checkExam').onclick=()=>{
+    setStatus(cur,'learning');
+    const exp=lines(cur);
+    const got=ta.value.replace(/\s+$/,'').split('\n');
+    let okCount=0;const rows=[];
+    for(let i=0;i<exp.length;i++){
+      const e=exp[i],g=(got[i]!==undefined?got[i].replace(/\s+$/,''):'');
+      const ok=g===e;if(ok)okCount++;
+      rows.push(`<div class="row ${ok?'ok':'bad'}"><span class="lab">${i+1}</span>${esc(g||'(пусто)')}</div>${ok?'':`<div class="exp">нужно: ${esc(e)}</div>`}`);
+    }
+    const pct=Math.round(okCount/exp.length*100);
+    if(pct===100)setStatus(cur,'done');
+    const res=$('#examRes');res.style.display='block';
+    res.innerHTML=`<div class="score">${pct===100?'🎉 ':''}Верно строк: ${okCount} из ${exp.length} (${pct}%)</div><div class="diff">${rows.join('')}</div>`;
+    res.scrollIntoView({behavior:'smooth',block:'nearest'});
+  };
+}
+
+/* ===================== МОДАЛКИ ===================== */
+function fillModals(){
+  $('#basicsBody').innerHTML=BASICS.map(([h,p])=>`<div class="concept"><h4>${h}</h4><p>${p}</p></div>`).join('');
+  $('#glossBody').innerHTML=GLOSS.map(([h,p])=>`<div class="concept"><h4><code>${esc(h)}</code></h4><p>${p}</p></div>`).join('');
+}
+function openModal(id){$(id).classList.add('show')}
+document.querySelectorAll('.modal-back').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m||e.target.hasAttribute('data-close'))m.classList.remove('show')})});
+$('#btnBasics').onclick=()=>openModal('#mBasics');
+$('#btnGloss').onclick=()=>openModal('#mGloss');
+$('#btnReset').onclick=()=>{progress={};saveProgress();renderHome()};
+
+/* Тема */
+function applyTheme(t){if(t)document.documentElement.setAttribute('data-theme',t);try{localStorage.setItem('np_theme',t||'')}catch(e){}}
+let theme=(()=>{try{return localStorage.getItem('np_theme')||''}catch(e){return ''}})();
+if(theme)document.documentElement.setAttribute('data-theme',theme);
+$('#btnTheme').onclick=()=>{
+  const sysDark=matchMedia('(prefers-color-scheme:dark)').matches;
+  const now=document.documentElement.getAttribute('data-theme')|| (sysDark?'dark':'light');
+  theme=now==='dark'?'light':'dark';applyTheme(theme);
+};
+
+/* старт */
+fillModals();renderHome();
+</script>
+
+</body></html>
